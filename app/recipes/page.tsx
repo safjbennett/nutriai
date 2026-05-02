@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Navigation from '@/components/Navigation'
-import { getCurrentUser } from '@/lib/storage'
+import { addEntry } from '@/lib/food-log'
 import { UserProfile, NutritionPlan, Recipe } from '@/lib/types'
 import { calculateNutritionPlan } from '@/lib/calculations'
 
@@ -24,7 +24,7 @@ export default function RecipesPage() {
     const u = getCurrentUser()
     if (!u) { router.push('/'); return }
     setUser(u)
-    if (u.age && u.weight && u.height) {
+if (u.age && u.weightKg && u.heightCm) {
       const p = calculateNutritionPlan(u)
       setPlan(p)
     }
@@ -91,9 +91,8 @@ export default function RecipesPage() {
     }
   }, [user, plan]) // eslint-disable-line
 
-  function addToLog(recipe: Recipe) {
+function addToLog(recipe: Recipe) {
     if (!user) return
-    const { addEntry } = require('@/lib/food-log')
     const today = new Date().toISOString().split('T')[0]
     addEntry(user.id, today, {
       name: recipe.name,
