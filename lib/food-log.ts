@@ -33,12 +33,14 @@ export function removeEntry(userId: string, date: string, entryId: string): void
   saveLog(date, getLog(date).filter(e => e.id !== entryId))
 }
 
-export function getDayLog(userId: string, date: string): FoodEntry[] {
-  return getLog(date)
+// Accepts (userId, date) or just (date) — userId is ignored, data keyed by date
+export function getDayLog(userIdOrDate: string, date?: string): FoodEntry[] {
+  return getLog(date ?? userIdOrDate)
 }
 
-export function getDailyTotals(userId: string, date: string): DailyTotals {
-  return getLog(date).reduce(
+// Accepts (userId, date) or just (date)
+export function getDailyTotals(userIdOrDate: string, date?: string): DailyTotals {
+  return getLog(date ?? userIdOrDate).reduce(
     (a, e) => ({ calories: a.calories + e.calories, protein: a.protein + e.protein, carbs: a.carbs + e.carbs, fat: a.fat + e.fat, entries: a.entries + 1 }),
     { calories: 0, protein: 0, carbs: 0, fat: 0, entries: 0 }
   )
