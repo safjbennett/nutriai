@@ -33,7 +33,7 @@ export default function FoodLogPage() {
     const u = getCurrentUser()
     if (!u) { router.push('/'); return }
     setUser(u)
-    if (u.age && u.weight && u.height) setPlan(calculateNutritionPlan(u))
+if (u.age && u.weightKg && u.heightCm) setPlan(calculateNutritionPlan(u))
     refresh(u.id, selectedDate)
   }, [router, refresh, selectedDate])
 
