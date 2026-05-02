@@ -2,9 +2,10 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Navigation from '@/components/Navigation'
-import { addEntry } from '@/lib/food-log'
+import { getCurrentUser } from '@/lib/storage'
 import { UserProfile, NutritionPlan, Recipe } from '@/lib/types'
 import { calculateNutritionPlan } from '@/lib/calculations'
+import { addEntry } from '@/lib/food-log'
 
 export default function RecipesPage() {
   const router = useRouter()
@@ -24,7 +25,7 @@ export default function RecipesPage() {
     const u = getCurrentUser()
     if (!u) { router.push('/'); return }
     setUser(u)
-if (u.age && u.weightKg && u.heightCm) {
+    if (u.age && u.weightKg && u.heightCm) {
       const p = calculateNutritionPlan(u)
       setPlan(p)
     }
@@ -86,12 +87,10 @@ if (u.age && u.weightKg && u.heightCm) {
   }, [activeTab, user, trending.length, loadTrending])
 
   useEffect(() => {
-    if (user && plan) {
-      searchRecipes()
-    }
-  }, [user, plan]) // eslint-disable-line
+    if (user) searchRecipes()
+  }, [user]) // eslint-disable-line
 
-function addToLog(recipe: Recipe) {
+  function addToLog(recipe: Recipe) {
     if (!user) return
     const today = new Date().toISOString().split('T')[0]
     addEntry(user.id, today, {
@@ -100,7 +99,7 @@ function addToLog(recipe: Recipe) {
       protein: recipe.protein,
       carbs: recipe.carbs,
       fat: recipe.fat,
-      portion: `1 serving`,
+      portion: '1 serving',
       mealType: 'lunch'
     })
     setAddedToLog(recipe.id)
@@ -120,7 +119,6 @@ function addToLog(recipe: Recipe) {
             <p className="text-gray-600 dark:text-gray-400 mt-1">AI-powered recipes tailored to your goals</p>
           </div>
 
-          {/* Tabs */}
           <div className="flex gap-2 mb-6">
             <button
               onClick={() => setActiveTab('search')}
@@ -137,7 +135,6 @@ function addToLog(recipe: Recipe) {
             </button>
           </div>
 
-          {/* Search bar */}
           {activeTab === 'search' && (
             <div className="flex gap-3 mb-8">
               <input
@@ -174,12 +171,12 @@ function addToLog(recipe: Recipe) {
           )}
 
           {!isLoading && (
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {displayRecipes.map(recipe => (
                 <div key={recipe.id} className="bg-white dark:bg-gray-800 rounded-2xl overflow-hidden shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-md transition-shadow">
                   <div className="relative">
                     <img
-                      src={recipe.image || `https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400&q=80`}
+                      src={recipe.image || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400&q=80'}
                       alt={recipe.name}
                       className="w-full h-48 object-cover"
                       onError={e => { (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400&q=80' }}
@@ -190,14 +187,12 @@ function addToLog(recipe: Recipe) {
                       </div>
                     )}
                     <div className="absolute top-3 right-3 bg-black/60 text-white text-xs px-2 py-1 rounded-full">
-                      {recipe.difficulty}
+                      {recipe.difficulty || 'Medium'}
                     </div>
                   </div>
                   <div className="p-5">
                     <h3 className="font-bold text-gray-900 dark:text-white text-lg mb-1">{recipe.name}</h3>
                     <p className="text-sm text-gray-600 dark:text-gray-400 mb-4 line-clamp-2">{recipe.description}</p>
-
-                    {/* Macros */}
                     <div className="grid grid-cols-4 gap-2 mb-4">
                       {[
                         { label: 'Cal', value: recipe.calories, color: 'text-orange-600 dark:text-orange-400' },
@@ -211,13 +206,11 @@ function addToLog(recipe: Recipe) {
                         </div>
                       ))}
                     </div>
-
                     <div className="flex items-center gap-3 text-xs text-gray-500 dark:text-gray-400 mb-4">
                       <span>⏱ {recipe.prepTime + recipe.cookTime} min</span>
                       <span>👤 {recipe.servings} serving{recipe.servings !== 1 ? 's' : ''}</span>
                       {recipe.platform && <span>📱 {recipe.platform}</span>}
                     </div>
-
                     <div className="flex gap-2">
                       <button
                         onClick={() => setSelectedRecipe(recipe)}
@@ -247,7 +240,6 @@ function addToLog(recipe: Recipe) {
         </div>
       </main>
 
-      {/* Recipe Modal */}
       {selectedRecipe && (
         <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4" onClick={() => setSelectedRecipe(null)}>
           <div className="bg-white dark:bg-gray-800 rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
@@ -263,7 +255,6 @@ function addToLog(recipe: Recipe) {
                 <button onClick={() => setSelectedRecipe(null)} className="text-gray-400 hover:text-gray-600 text-2xl">✕</button>
               </div>
               <p className="text-gray-600 dark:text-gray-400 mb-6">{selectedRecipe.description}</p>
-
               <div className="grid grid-cols-4 gap-3 mb-6">
                 {[
                   { label: 'Calories', value: selectedRecipe.calories, color: 'bg-orange-50 dark:bg-orange-900/20 text-orange-700 dark:text-orange-300' },
@@ -277,7 +268,6 @@ function addToLog(recipe: Recipe) {
                   </div>
                 ))}
               </div>
-
               <h3 className="font-bold text-gray-900 dark:text-white mb-3">Ingredients</h3>
               <ul className="space-y-1 mb-6">
                 {selectedRecipe.ingredients.map((ing, i) => (
@@ -287,7 +277,6 @@ function addToLog(recipe: Recipe) {
                   </li>
                 ))}
               </ul>
-
               <h3 className="font-bold text-gray-900 dark:text-white mb-3">Instructions</h3>
               <ol className="space-y-3 mb-6">
                 {selectedRecipe.instructions.map((step, i) => (
@@ -297,12 +286,11 @@ function addToLog(recipe: Recipe) {
                   </li>
                 ))}
               </ol>
-
               <button
                 onClick={() => { addToLog(selectedRecipe); setSelectedRecipe(null) }}
                 className="w-full py-3 bg-brand-600 hover:bg-brand-700 text-white rounded-xl font-semibold transition-colors"
               >
-                + Add to Today's Food Log
+                + Add to Today&apos;s Food Log
               </button>
             </div>
           </div>
