@@ -2,7 +2,7 @@ export type Gender = 'male' | 'female'
 export type ActivityLevel = 'sedentary' | 'light' | 'moderate' | 'active' | 'very_active'
 export type Goal = 'lose_weight' | 'maintain' | 'bulk'
 export type WeightLossRate = 'slow' | 'moderate' | 'fast'
-export type MealType = 'breakfast' | 'lunch' | 'dinner' | 'snack' | 'any'
+export type MealType = 'breakfast' | 'lunch' | 'dinner' | 'snack'
 
 export interface UserProfile {
   id: string; name: string; email: string; passwordHash: string
